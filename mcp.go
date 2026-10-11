@@ -10,6 +10,16 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
+type authRoundTripper struct {
+	token string
+	next  http.RoundTripper
+}
+
+func (rt *authRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Authorization", "Bearer "+rt.token)
+	return rt.next.RoundTrip(req)
+}
+
 func createGitLabMcp(ctx context.Context, gitlabUrl string, gitlabToken string) ([]anthropic.BetaTool, error) {
 	transport := &mcp.StreamableClientTransport{
 		Endpoint: fmt.Sprintf("%s/api/v4/mcp", gitlabUrl),

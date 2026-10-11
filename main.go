@@ -4,23 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	gitlab "gitlab.com/gitlab-org/api/client-go/v3"
 )
-
-type authRoundTripper struct {
-	token string
-	next  http.RoundTripper
-}
-
-func (rt *authRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", "Bearer "+rt.token)
-	return rt.next.RoundTrip(req)
-}
 
 func doMain(ctx context.Context) error {
 	gitlabToken := os.Getenv("GITLAB_TOKEN")
