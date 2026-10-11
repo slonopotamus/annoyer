@@ -15,6 +15,12 @@ func runLLM(ctx context.Context, model string, prompt string, tools []anthropic.
 	runner := aiClient.Beta.Messages.NewToolRunnerStreaming(tools, anthropic.BetaToolRunnerParams{
 		MaxTokens: math.MaxInt64,
 		Model:     model,
+		Thinking: anthropic.BetaThinkingConfigParamUnion{
+			OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
+				BudgetTokens: math.MaxInt64,
+				Display:      anthropic.BetaThinkingConfigEnabledDisplayUpdates,
+			},
+		},
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(prompt)),
 		},
@@ -32,8 +38,11 @@ func runLLM(ctx context.Context, model string, prompt string, tools []anthropic.
 			}
 			switch ev := event.AsAny().(type) {
 			case anthropic.BetaRawContentBlockDeltaEvent:
-				if text := ev.Delta.AsTextDelta(); text.Text != "" {
-					sb.WriteString(text.Text)
+				if ev.Delta.Text != "" {
+					sb.WriteString(ev.Delta.Text)
+				}
+				if ev.Delta.Thinking != "" {
+					sb.WriteString(ev.Delta.Thinking)
 				}
 			}
 		}
