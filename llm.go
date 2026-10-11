@@ -45,6 +45,11 @@ func runLLM(ctx context.Context, model string, prompt string, tools []anthropic.
 					sb.WriteString(ev.Delta.Thinking)
 				}
 			}
+
+			if sb.Len() > 0 && strings.HasSuffix(sb.String(), "\n") {
+				log.Print(sb.String())
+				sb.Reset()
+			}
 		}
 
 		if sb.Len() > 0 {
