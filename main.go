@@ -98,8 +98,10 @@ func newAnnoyerCommand() *cobra.Command {
 	var promptFile string
 
 	cmd := &cobra.Command{
-		Use:   "annoyer",
-		Short: "Review a GitLab merge request with an LLM agent",
+		Use:           "annoyer",
+		Short:         "Review a GitLab merge request with an LLM agent",
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return doMain(cmd.Context(), allowedRoots, promptFile)
 		},
