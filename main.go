@@ -59,7 +59,12 @@ func doMain(ctx context.Context) error {
 
 	tools = append(tools, localTools...)
 
-	prompt := fmt.Sprintf("Review MR %d for issues. Only report issues you are confident about. Compilation issues will be caught by CI. Create discussions in MR with your findings. Mark discussions as AI-generated. Add severity markers (critical/high/medium/low).", mergeRequestId)
+	prompt := fmt.Sprintf(`Review MR %d for issues.
+Only report issues you are confident about.
+Compilation issues will be caught by CI.
+Create discussions in MR with your findings.
+Mark discussions as AI-generated.
+Add severity markers with icons (🔴 critical/🟠 high/🟡 medium/🟢 low).`, mergeRequestId)
 
 	return runLLM(ctx, llmModel, prompt, tools)
 }
