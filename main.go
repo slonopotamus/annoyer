@@ -17,7 +17,9 @@ const defaultPrompt = `Only report issues you are confident about.
 Compilation issues will be caught by CI.
 Create discussions in MR with your findings.
 Mark discussions as AI-generated.
-Add severity markers with icons (🔴 critical/🟠 high/🟡 medium/🟢 low).`
+Add severity markers with icons (🔴 critical/🟠 high/🟡 medium/🟢 low).
+Resolve pre-existing discussions with AI reviews if they are no longer applicable.
+If you find no issues blocking the merge, approve the merge request silently.`
 
 func doMain(ctx context.Context, allowedRoots []string, promptFile string) error {
 	gitlabToken := os.Getenv("GITLAB_TOKEN")

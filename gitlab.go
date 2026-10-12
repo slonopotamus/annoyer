@@ -9,6 +9,11 @@ import (
 	"gitlab.com/gitlab-org/api/client-go/v3"
 )
 
+type approveMergeRequestParams struct {
+	MergeRequest int64                             `json:"merge_request_id"`
+	Options      gitlab.ApproveMergeRequestOptions `json:"options"`
+}
+
 type createMergeRequestDiscussionParams struct {
 	MergeRequest int64                                      `json:"merge_request_id"`
 	Options      gitlab.CreateMergeRequestDiscussionOptions `json:"options"`
@@ -72,6 +77,10 @@ type searchParams struct {
 	Options gitlab.SearchOptions `json:"options"`
 }
 
+type unapproveMergeRequestParams struct {
+	MergeRequest int64 `json:"merge_request_id"`
+}
+
 func marshalToBetaToolResult(v any) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 	result, err := json.Marshal(v)
 	if err != nil {
@@ -82,6 +91,18 @@ func marshalToBetaToolResult(v any) (anthropic.BetaToolResultBlockParamContentUn
 }
 
 func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error) {
+	approveMergeRequestTool, err := toolrunner.NewBetaToolFromJSONSchema("approveMergeRequest", "Approves a merge request. Pass sha (the MR's HEAD commit) if you want to bind the approval to a specific commit", func(ctx context.Context, params approveMergeRequestParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.MergeRequestApprovals.ApproveMergeRequest(pid, params.MergeRequest, &params.Options, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	createDiscussionTool, err := toolrunner.NewBetaToolFromJSONSchema("createDiscussion", "Creates a new thread (discussion) on a merge request; replies can be added to it later. To place it inline on a diff, set position: old_path and new_path are both required; use new_line for added lines, old_line for removed lines, both for unchanged lines, and take base_sha/start_sha/head_sha from the diff_refs field returned by getMergeRequestChanges. To reply to an existing thread, pass in_reply_to_discussion_id. Returns the created discussion with its ID, which can be used to resolve it or reply to it", func(ctx context.Context, params createMergeRequestDiscussionParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 		result, _, err := client.Discussions.CreateMergeRequestDiscussion(pid, params.MergeRequest, &params.Options, gitlab.WithContext(ctx))
 		if err != nil {
@@ -237,7 +258,20 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 		return nil, err
 	}
 
+	unapproveMergeRequestTool, err := toolrunner.NewBetaToolFromJSONSchema("unapproveMergeRequest", "Removes the approval of the merge request", func(ctx context.Context, params unapproveMergeRequestParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		_, err := client.MergeRequestApprovals.UnapproveMergeRequest(pid, params.MergeRequest, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(map[string]string{"status": "unapproved"})
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return []anthropic.BetaTool{
+		approveMergeRequestTool,
 		createDiscussionTool,
 		createMergeRequestNoteTool,
 		getFileTool,
@@ -251,5 +285,6 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 		listTreeTool,
 		resolveDiscussionTool,
 		searchBlobsTool,
+		unapproveMergeRequestTool,
 	}, nil
 }

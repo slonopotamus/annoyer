@@ -18,6 +18,7 @@ An LLM agent that reviews GitLab merge requests and posts its findings as discus
 
 The agent is given GitLab tools:
 
+* `approveMergeRequest` — approve the MR
 * `createDiscussion` — create a (possibly inline) thread on the MR; can reply to an existing thread
 * `createMergeRequestNote` — add a top-level note
 * `getFile` — read a file at a path/ref (raw contents)
@@ -31,6 +32,7 @@ The agent is given GitLab tools:
 * `listTree` — list repository files/directories
 * `resolveDiscussion` — resolve/reopen a thread
 * `searchBlobs` — search code in the project
+* `unapproveMergeRequest` — unapprove the MR
 
 If you pass one or more `--allowed-roots`, the agent additionally gets local
 file tools (read, glob, grep) restricted to those directories — useful when the
