@@ -18,7 +18,7 @@ const defaultPrompt = `Only report issues you are confident about.
 Compilation issues will be caught by CI, no need to report them.
 Create messages in MR with your findings.
 Use discussions for messages that demand reaction, use notes for messages that don't.
-Produce a concise summary (2-5 sentences) note of the entire merge request: what it does and which areas it touches.
+Produce a concise summary (2-5 sentences) note of the entire merge request if none exists yet: what it does and which areas it touches.
 Add "🤖 AI-generated review" header in italic to your messages.
 Use markers for issue severity:
 * 🔴 [critical]
