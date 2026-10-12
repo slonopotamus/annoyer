@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -28,7 +29,7 @@ Ignore CI status.
 Resolve pre-existing AI reviews if they are no longer applicable.
 If you find no issues blocking the merge, approve the merge request silently.`
 
-func doMain(ctx context.Context, allowedRoots []string, promptFile string) error {
+func doMain(ctx context.Context, allowedRoots []string) error {
 	gitlabToken := os.Getenv("GITLAB_TOKEN")
 	if gitlabToken == "" {
 		return fmt.Errorf("GITLAB_TOKEN env variable is not set")
@@ -90,13 +91,14 @@ func doMain(ctx context.Context, allowedRoots []string, promptFile string) error
 		)
 	}
 
+	gitRef := fmt.Sprintf("refs/merge-requests/%d/head", mergeRequestId)
+	promptFile, resp, err := git.RepositoryFiles.GetRawFile(gitlabProjectId, "REVIEW.md", &gitlab.GetRawFileOptions{Ref: &gitRef})
+
 	prompt := defaultPrompt
-	if promptFile != "" {
-		promptBytes, err := os.ReadFile(promptFile)
-		if err != nil {
-			return fmt.Errorf("unable to read prompt file: %w", err)
-		}
-		prompt = string(promptBytes)
+	if err != nil && (resp == nil || resp.StatusCode != http.StatusNotFound) {
+		return err
+	} else if len(promptFile) > 0 {
+		prompt = string(promptFile)
 	}
 
 	return runLLM(ctx, llmModel, fmt.Sprintf("You are reviewing merge request %d.\n\n%s", mergeRequestId, prompt), tools)
@@ -104,7 +106,6 @@ func doMain(ctx context.Context, allowedRoots []string, promptFile string) error
 
 func newAnnoyerCommand() *cobra.Command {
 	var allowedRoots []string
-	var promptFile string
 
 	cmd := &cobra.Command{
 		Use:           "annoyer",
@@ -112,11 +113,10 @@ func newAnnoyerCommand() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return doMain(cmd.Context(), allowedRoots, promptFile)
+			return doMain(cmd.Context(), allowedRoots)
 		},
 	}
 	cmd.Flags().StringSliceVar(&allowedRoots, "allowed-roots", nil, "additional directories the file tools may access")
-	cmd.Flags().StringVar(&promptFile, "prompt-file", "", "path to a file with the review prompt (overrides the built-in prompt)")
 	return cmd
 }
 
