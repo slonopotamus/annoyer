@@ -14,9 +14,9 @@ import (
 )
 
 const defaultPrompt = `Only report issues you are confident about.
-Compilation issues will be caught by CI.
+Compilation issues will be caught by CI, no need to report them.
 Create discussions in MR with your findings.
-Mark discussions as AI-generated.
+Mark your messages with "🤖 AI-generated review" header in italic.
 Add severity markers with icons (🔴 critical/🟠 high/🟡 medium/🟢 low).
 Ignore CI status.
 Resolve pre-existing discussions with AI reviews if they are no longer applicable.
