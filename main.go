@@ -18,6 +18,7 @@ Compilation issues will be caught by CI.
 Create discussions in MR with your findings.
 Mark discussions as AI-generated.
 Add severity markers with icons (🔴 critical/🟠 high/🟡 medium/🟢 low).
+Ignore CI status.
 Resolve pre-existing discussions with AI reviews if they are no longer applicable.
 If you find no issues blocking the merge, approve the merge request silently.`
 
