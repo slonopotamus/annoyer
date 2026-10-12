@@ -1,0 +1,44 @@
+= annoyer
+:project-handle: annoyer
+:uri-project: https://github.com/slonopotamus/{project-handle}
+:uri-ci: {uri-project}/actions?query=branch%3Amain
+:source-highlighter: rouge
+
+image:{uri-project}/actions/workflows/ci.yml/badge.svg?branch=main[GitHub Actions,link={uri-ci}]
+
+An LLM agent that reviews GitLab merge requests and posts its findings as discussions.
+
+== How it works
+
+* annoyer is meant to run inside a GitLab CI job on a merge-request pipeline.
+* It talks via Anthropic API with an agentic prompt and a set of GitLab tools.
+* The agent inspects changes, then creates discussions on the merge request.
+
+== Tools
+
+The agent is given GitLab tools:
+
+* `createDiscussion` — create a (possibly inline) thread on the MR; can reply to an existing thread
+* `createMergeRequestNote` — add a top-level note
+* `getFile` — read a file at a path/ref (raw contents)
+* `getMergeRequestChanges` — MR details, diffs, and the `diff_refs` SHAs needed for inline comments
+* `getMergeRequestCommits` — list MR commits
+* `listMergeRequestDiffs` — list the changed-file diffs
+* `listMergeRequestDiscussions` — list existing threads
+* `listMergeRequestNotes` — list notes
+* `listMergeRequestPipelines` — list MR pipelines
+* `listPipelineJobs` — list jobs for a pipeline
+* `listTree` — list repository files/directories
+* `resolveDiscussion` — resolve/reopen a thread
+* `searchBlobs` — search code in the project
+
+If you pass one or more `--allowed-roots`, the agent additionally gets local
+file tools (read, glob, grep) restricted to those directories — useful when the
+working tree is checked out and you want it to read files directly.
+
+== Building
+
+[source,shell]
+----
+go build .
+----
