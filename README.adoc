@@ -22,7 +22,7 @@ The agent is given GitLab tools:
 * `createDiscussion` — create a (possibly inline) thread on the MR; can reply to an existing thread
 * `createMergeRequestNote` — add a top-level note
 * `getFile` — read a file at a path/ref (raw contents)
-* `getMergeRequestChanges` — MR details, diffs, and the `diff_refs` SHAs needed for inline comments
+* `getMergeRequest` — MR details (state, title, branches, description) and the `diff_refs` SHAs needed for inline comments; file diffs come from `listMergeRequestDiffs`
 * `getMergeRequestCommits` — list MR commits
 * `listMergeRequestDiffs` — list the changed-file diffs
 * `listMergeRequestDiscussions` — list existing threads

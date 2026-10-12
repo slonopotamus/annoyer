@@ -29,9 +29,9 @@ type getFileParams struct {
 	Options gitlab.GetRawFileOptions `json:"options"`
 }
 
-type getMergeRequestChangesParams struct {
-	MergeRequest int64                                `json:"merge_request_id"`
-	Options      gitlab.GetMergeRequestChangesOptions `json:"options"`
+type getMergeRequestParams struct {
+	MergeRequest int64                          `json:"merge_request_id"`
+	Options      gitlab.GetMergeRequestsOptions `json:"options"`
 }
 
 type getMergeRequestCommitsParams struct {
@@ -103,7 +103,7 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 		return nil, err
 	}
 
-	createDiscussionTool, err := toolrunner.NewBetaToolFromJSONSchema("createDiscussion", "Creates a new thread (discussion) on a merge request; replies can be added to it later. To place it inline on a diff, set position: old_path and new_path are both required; use new_line for added lines, old_line for removed lines, both for unchanged lines, and take base_sha/start_sha/head_sha from the diff_refs field returned by getMergeRequestChanges. To reply to an existing thread, pass in_reply_to_discussion_id. Returns the created discussion with its ID, which can be used to resolve it or reply to it", func(ctx context.Context, params createMergeRequestDiscussionParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+	createDiscussionTool, err := toolrunner.NewBetaToolFromJSONSchema("createDiscussion", "Creates a new thread (discussion) on a merge request; replies can be added to it later. To place it inline on a diff, set position: old_path and new_path are both required; use new_line for added lines, old_line for removed lines, both for unchanged lines, and take base_sha/start_sha/head_sha from the diff_refs field returned by getMergeRequest. To reply to an existing thread, pass in_reply_to_discussion_id. Returns the created discussion with its ID, which can be used to resolve it or reply to it", func(ctx context.Context, params createMergeRequestDiscussionParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 		result, _, err := client.Discussions.CreateMergeRequestDiscussion(pid, params.MergeRequest, &params.Options, gitlab.WithContext(ctx))
 		if err != nil {
 			return anthropic.BetaToolResultBlockParamContentUnion{}, err
@@ -137,8 +137,8 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 		return nil, err
 	}
 
-	getMergeRequestChangesTool, err := toolrunner.NewBetaToolFromJSONSchema("getMergeRequestChanges", "Retrieves information about a merge request, including its files and changes (diffs), and the diff_refs SHAs needed for inline comments. Diffs are subject to size limits; when limits are hit, overflow is set to true", func(ctx context.Context, params getMergeRequestChangesParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
-		result, _, err := client.MergeRequests.GetMergeRequestChanges(pid, params.MergeRequest, &params.Options, gitlab.WithContext(ctx))
+	getMergeRequestTool, err := toolrunner.NewBetaToolFromJSONSchema("getMergeRequest", "Retrieves information about a single merge request, including its state, title, description, source/target branches, and the diff_refs SHAs needed for inline comments. Does not include the file diffs themselves; use listMergeRequestDiffs for those", func(ctx context.Context, params getMergeRequestParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.MergeRequests.GetMergeRequest(pid, params.MergeRequest, &params.Options, gitlab.WithContext(ctx))
 		if err != nil {
 			return anthropic.BetaToolResultBlockParamContentUnion{}, err
 		}
@@ -275,7 +275,7 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 		createDiscussionTool,
 		createMergeRequestNoteTool,
 		getFileTool,
-		getMergeRequestChangesTool,
+		getMergeRequestTool,
 		getMergeRequestCommitsTool,
 		listMergeRequestDiffsTool,
 		listMergeRequestDiscussionsTool,
