@@ -9,10 +9,8 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 )
 
-func runLLM(ctx context.Context, model string, prompt string, tools []anthropic.BetaTool) error {
-	aiClient := anthropic.NewClient()
-
-	runner := aiClient.Beta.Messages.NewToolRunnerStreaming(tools, anthropic.BetaToolRunnerParams{
+func runLLM(ctx context.Context, model string, prompt []string, tools []anthropic.BetaTool) error {
+	runnerParams := anthropic.BetaToolRunnerParams{
 		MaxTokens: math.MaxInt64,
 		Model:     model,
 		Thinking: anthropic.BetaThinkingConfigParamUnion{
@@ -21,10 +19,16 @@ func runLLM(ctx context.Context, model string, prompt string, tools []anthropic.
 				Display:      anthropic.BetaThinkingConfigEnabledDisplayUpdates,
 			},
 		},
-		Messages: []anthropic.BetaMessageParam{
-			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(prompt)),
-		},
-	})
+	}
+
+	for _, message := range prompt {
+		runnerParams.Messages = append(runnerParams.Messages,
+			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(message)),
+		)
+	}
+
+	aiClient := anthropic.NewClient()
+	runner := aiClient.Beta.Messages.NewToolRunnerStreaming(tools, runnerParams)
 
 	for events, err := range runner.AllStreaming(ctx) {
 		if err != nil {

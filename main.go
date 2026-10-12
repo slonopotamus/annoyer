@@ -102,7 +102,7 @@ func doMain(ctx context.Context, allowedRoots []string) error {
 		prompt = string(promptFile)
 	}
 
-	return runLLM(ctx, llmModel, fmt.Sprintf("You are reviewing merge request %d.\n\n%s", mergeRequestId, prompt), tools)
+	return runLLM(ctx, llmModel, []string{fmt.Sprintf("You are reviewing merge request %d", mergeRequestId), prompt}, tools)
 }
 
 func newAnnoyerCommand() *cobra.Command {
