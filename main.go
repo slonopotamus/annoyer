@@ -8,10 +8,12 @@ import (
 	"strconv"
 
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/tools/agenttoolset"
+	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go/v3"
 )
 
-func doMain(ctx context.Context) error {
+func doMain(ctx context.Context, allowedRoots []string) error {
 	gitlabToken := os.Getenv("GITLAB_TOKEN")
 	if gitlabToken == "" {
 		return fmt.Errorf("GITLAB_TOKEN env variable is not set")
@@ -59,6 +61,20 @@ func doMain(ctx context.Context) error {
 
 	tools = append(tools, localTools...)
 
+	if len(allowedRoots) > 0 {
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+
+		agentEnv := agenttoolset.AgentToolContext{Workdir: wd, AllowedRoots: allowedRoots}
+		tools = append(tools,
+			agenttoolset.BetaReadTool(&agentEnv),
+			agenttoolset.BetaGlobTool(&agentEnv),
+			agenttoolset.BetaGrepTool(&agentEnv),
+		)
+	}
+
 	prompt := fmt.Sprintf(`Review MR %d for issues.
 Only report issues you are confident about.
 Compilation issues will be caught by CI.
@@ -69,8 +85,22 @@ Add severity markers with icons (🔴 critical/🟠 high/🟡 medium/🟢 low).`
 	return runLLM(ctx, llmModel, prompt, tools)
 }
 
+func newAnnoyerCommand() *cobra.Command {
+	var allowedRoots []string
+
+	cmd := &cobra.Command{
+		Use:   "annoyer",
+		Short: "Review a GitLab merge request with an LLM agent",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return doMain(cmd.Context(), allowedRoots)
+		},
+	}
+	cmd.Flags().StringSliceVar(&allowedRoots, "allowed-roots", nil, "additional directories the file tools may access")
+	return cmd
+}
+
 func main() {
-	if err := doMain(context.TODO()); err != nil {
+	if err := newAnnoyerCommand().Execute(); err != nil {
 		log.Fatal(err)
 	}
 }
