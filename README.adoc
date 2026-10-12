@@ -42,4 +42,3 @@ working tree is checked out and you want it to read files directly.
 ----
 go build .
 ----
-p
