@@ -19,7 +19,7 @@ Create discussions in MR with your findings.
 Mark your messages with "🤖 AI-generated review" header in italic.
 Add severity markers with icons (🔴 critical/🟠 high/🟡 medium/🟢 low).
 Ignore CI status.
-Resolve pre-existing discussions with AI reviews if they are no longer applicable.
+Resolve pre-existing AI reviews if they are no longer applicable.
 If you find no issues blocking the merge, approve the merge request silently.`
 
 func doMain(ctx context.Context, allowedRoots []string, promptFile string) error {
