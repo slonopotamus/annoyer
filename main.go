@@ -16,8 +16,14 @@ import (
 const defaultPrompt = `Only report issues you are confident about.
 Compilation issues will be caught by CI, no need to report them.
 Create discussions in MR with your findings.
-Mark your messages with "🤖 AI-generated review" header in italic.
-Add severity markers with icons (🔴 critical/🟠 high/🟡 medium/🟢 low).
+Use discussions for messages that demand reaction, use notes for messages that don't.
+Produce a concise summary note of the entire merge request: what it does and which areas it touches.
+Add "🤖 AI-generated review" header in italic to your messages.
+Use markers for issue severity:
+* 🔴 [critical]
+* 🟠 [high]
+* 🟡 [medium]
+* 🟢 [low]
 Ignore CI status.
 Resolve pre-existing AI reviews if they are no longer applicable.
 If you find no issues blocking the merge, approve the merge request silently.`
