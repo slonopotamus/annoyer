@@ -5,7 +5,8 @@
 :source-highlighter: rouge
 :version: 0.0.1
 
-image:{uri-project}/actions/workflows/ci.yml/badge.svg?branch=main[GitHub Actions,link={uri-ci}]
+image:{uri-project}/actions/workflows/ci.yml/badge.svg?branch=main[Build Status,link={uri-ci}]
+image:https://img.shields.io/github/v/release/slonopotamus/{project-handle}[Download,link={uri-project}/releases/latest]
 
 An LLM agent that reviews GitLab merge requests and posts its findings as discussions.
 
