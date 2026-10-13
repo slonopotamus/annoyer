@@ -62,7 +62,7 @@ If the repository contains a `REVIEW.md` file on the merge request's head ref, a
 ----
 review:
   rules:
-    - if: $CI_MERGE_REQUEST_IID
+    - if: "$CI_MERGE_REQUEST_ID"
   image: golang:1.27
   variables:
     ANTHROPIC_BASE_URL: your anthropic-compatible LLM provider
@@ -70,7 +70,7 @@ review:
     GITLAB_TOKEN: your token
   script:
     - go install github.com/slonopotamus/annoyer@{version}
-    - ~/go/bin/annoyer
+    - annoyer
 ----
 
 == Building
