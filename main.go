@@ -63,7 +63,7 @@ func doMain(ctx context.Context, allowedRoots []string) error {
 
 	llmModel := os.Getenv("ANNOYER_MODEL")
 	if llmModel == "" {
-		llmModel = "unsloth/Qwen3.8-27B-GGUF"
+		llmModel = anthropic.ModelClaudeOpus5
 	}
 
 	var tools []anthropic.BetaTool

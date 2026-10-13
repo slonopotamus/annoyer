@@ -3,6 +3,7 @@
 :uri-project: https://github.com/slonopotamus/{project-handle}
 :uri-ci: {uri-project}/actions?query=branch%3Amain
 :source-highlighter: rouge
+:version: main
 
 image:{uri-project}/actions/workflows/ci.yml/badge.svg?branch=main[GitHub Actions,link={uri-ci}]
 
@@ -13,6 +14,70 @@ An LLM agent that reviews GitLab merge requests and posts its findings as discus
 * annoyer is meant to run inside a GitLab CI job on a merge-request pipeline.
 * It talks via Anthropic API with an agentic prompt and a set of GitLab tools.
 * The agent inspects changes, then creates discussions on the merge request.
+
+== Usage
+
+Environment variables:
+
+[cols="1,1,2",options="header"]
+|===
+|Variable |Source |Purpose
+
+|`ANTHROPIC_BASE_URL`
+|set yourself, optional
+|Anthropic-compatible LLM provider (standard Anthropic SDK variable)
+
+|`ANTHROPIC_API_KEY`
+|set yourself, required
+|API key for the LLM provider (standard Anthropic SDK variable)
+
+|`ANNOYER_MODEL`
+|set yourself, optional
+|LLM model ID passed to the LLM API, defaults to `claude-opus-5`
+
+|`GITLAB_TOKEN`
+|set yourself, required
+|GitLab token with `api` and `read_repository` scopes
+
+|`CI_SERVER_URL`
+|GitLab CI
+|GitLab instance URL
+
+|`CI_PROJECT_ID`
+|GitLab CI
+|Project ID
+
+|`CI_MERGE_REQUEST_IID`
+|GitLab CI
+|Merge request IID
+
+|===
+
+If the repository contains a `REVIEW.md` file on the merge request's head ref, annoyer will download it and use as LLM prompt.
+
+=== GitLab CI example
+
+[source,yaml,subs="attributes+"]
+----
+review:
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+  image: golang:1.27
+  variables:
+    ANTHROPIC_BASE_URL: your anthropic-compatible LLM provider
+    ANNOYER_MODEL: your/model-id
+    GITLAB_TOKEN: your token
+  script:
+    - go install github.com/slonopotamus/annoyer@{version}
+    - ~/go/bin/annoyer
+----
+
+== Building
+
+[source,shell]
+----
+go build .
+----
 
 == Tools
 
@@ -37,10 +102,3 @@ The agent is given GitLab tools:
 If you pass one or more `--allowed-roots`, the agent additionally gets local
 file tools (read, glob, grep) restricted to those directories — useful when the
 working tree is checked out and you want it to read files directly.
-
-== Building
-
-[source,shell]
-----
-go build .
-----
