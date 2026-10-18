@@ -56,7 +56,7 @@ func doMain(ctx context.Context, allowedRoots []string) error {
 		return fmt.Errorf("unable to parse CI_MERGE_REQUEST_IID env variable: %w", err)
 	}
 
-	localTools, err := newGitLabTools(git, gitlabProjectId)
+	tools, err := newGitLabTools(git, gitlabProjectId)
 	if err != nil {
 		return err
 	}
@@ -65,18 +65,6 @@ func doMain(ctx context.Context, allowedRoots []string) error {
 	if llmModel == "" {
 		llmModel = anthropic.ModelClaudeOpus5
 	}
-
-	var tools []anthropic.BetaTool
-
-	/*
-		gitlabMcpTools, err := createGitLabMcp(ctx, gitlabUrl, gitlabToken)
-		if err != nil {
-			return err
-		}
-		tools = append(tools, gitlabMcpTools...)
-	*/
-
-	tools = append(tools, localTools...)
 
 	if len(allowedRoots) > 0 {
 		wd, err := os.Getwd()
