@@ -5,7 +5,7 @@ go 1.27.1
 require (
 	github.com/anthropics/anthropic-sdk-go v1.81.0
 	github.com/spf13/cobra v1.10.2
-	gitlab.com/gitlab-org/api/client-go/v3 v3.23.0
+	gitlab.com/gitlab-org/api/client-go/v3 v3.26.0
 )
 
 require (
