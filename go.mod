@@ -5,7 +5,7 @@ go 1.27.1
 require (
 	github.com/anthropics/anthropic-sdk-go v1.81.0
 	github.com/spf13/cobra v1.10.2
-	gitlab.com/gitlab-org/api/client-go/v3 v3.23.0
+	gitlab.com/gitlab-org/api/client-go/v3 v3.29.0
 )
 
 require (
@@ -33,5 +33,5 @@ require (
 	go.yaml.in/yaml/v4 v4.0.0-rc.2 // indirect
 	golang.org/x/oauth2 v0.37.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/time v0.15.0 // indirect
+	golang.org/x/time v0.16.0 // indirect
 )
