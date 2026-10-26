@@ -3,7 +3,7 @@ module github.com/slonopotamus/annoyer
 go 1.27.1
 
 require (
-	github.com/anthropics/anthropic-sdk-go v1.81.0
+	github.com/anthropics/anthropic-sdk-go v1.84.0
 	github.com/spf13/cobra v1.10.2
 	gitlab.com/gitlab-org/api/client-go/v3 v3.32.0
 )
