@@ -3,6 +3,8 @@
 
 == Unreleased
 
+== 0.0.2
+
 * Fix prompt caching.
 See https://github.com/anthropics/anthropic-sdk-go/issues/481 and https://github.com/anthropics/anthropic-sdk-go/pull/482
 
