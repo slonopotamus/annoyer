@@ -1,6 +1,11 @@
 = Changelog
 :icons: font
 
+== Unreleased
+
+* Fix prompt caching.
+See https://github.com/anthropics/anthropic-sdk-go/issues/481 and https://github.com/anthropics/anthropic-sdk-go/pull/482
+
 == 0.0.1
 
 * Initial release

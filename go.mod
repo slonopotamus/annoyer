@@ -35,3 +35,7 @@ require (
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/time v0.16.0 // indirect
 )
+
+// Temporary workaround for https://github.com/anthropics/anthropic-sdk-go/issues/481
+// See https://github.com/anthropics/anthropic-sdk-go/pull/482
+replace github.com/anthropics/anthropic-sdk-go => github.com/tingly-dev/anthropic-sdk-go v1.84.1-0.20261021030836-be88e657ec1f
