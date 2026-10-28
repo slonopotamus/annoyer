@@ -116,8 +116,6 @@ func doMain(ctx context.Context, allowedRoots []string) error {
 		prompt = string(promptFile)
 	}
 
-	prompt = defaultPrompt
-
 	return runLLM(ctx, llmModel, []string{fmt.Sprintf("You are reviewing merge request %d", mergeRequestId), prompt}, tools)
 }
 
