@@ -52,6 +52,18 @@ Environment variables:
 |GitLab CI
 |Merge request IID
 
+|`JIRA_TOKEN`
+|set yourself, optional
+|Jira token; enables the Jira tools when set
+
+|`JIRA_URL`
+|set yourself, optional
+|Jira instance URL (required when `JIRA_TOKEN` is set)
+
+|`JIRA_EMAIL`
+|set yourself, optional
+|Jira account email; when set, authenticates with email + token (basic auth), otherwise `JIRA_TOKEN` is used as a Bearer token
+
 |===
 
 If the repository contains a `REVIEW.md` file on the merge request's head ref, annoyer will download it and use as LLM prompt.
@@ -99,6 +111,12 @@ The agent is given GitLab tools:
 * `resolveDiscussion` — resolve/reopen a thread
 * `searchBlobs` — search code in the project
 * `unapproveMergeRequest` — unapprove the MR
+
+When `JIRA_TOKEN` and `JIRA_URL` are set, the agent additionally gets Jira tools:
+
+* `getJiraIssue` — get an issue by key
+* `searchJiraIssues` — search issues with a JQL query
+* `listJiraIssueComments` — list comments on an issue
 
 If you pass one or more `--allowed-roots`, the agent additionally gets local
 file tools (read, glob, grep) restricted to those directories — useful when the

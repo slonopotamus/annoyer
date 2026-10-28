@@ -10,6 +10,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/tools/agenttoolset"
+	jira "github.com/ctreminiom/go-atlassian/v2/jira/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go/v3"
 )
@@ -19,6 +20,7 @@ Produce a concise summary (2-5 sentences) note of the entire merge request if no
 Only report issues you are confident about.
 Compilation issues will be caught by CI, no need to report them.
 Create messages in MR with your findings.
+Check that changes address JIRA issue.
 Use discussions for messages that demand reaction, use notes for messages that don't.
 Add "🤖 AI-generated review" header in italic to your messages.
 Use markers for issue severity:
@@ -61,6 +63,30 @@ func doMain(ctx context.Context, allowedRoots []string) error {
 		return err
 	}
 
+	if jiraToken := os.Getenv("JIRA_TOKEN"); jiraToken != "" {
+		jiraUrl := os.Getenv("JIRA_URL")
+		if jiraUrl == "" {
+			return fmt.Errorf("JIRA_URL env variable is not set but JIRA_TOKEN is")
+		}
+
+		jiraClient, err := jira.New(nil, jiraUrl)
+		if err != nil {
+			return err
+		}
+
+		if jiraEmail := os.Getenv("JIRA_EMAIL"); jiraEmail != "" {
+			jiraClient.Auth.SetBasicAuth(jiraEmail, jiraToken)
+		} else {
+			jiraClient.Auth.SetBearerToken(jiraToken)
+		}
+
+		jiraTools, err := newJiraTools(jiraClient)
+		if err != nil {
+			return err
+		}
+		tools = append(tools, jiraTools...)
+	}
+
 	llmModel := os.Getenv("ANNOYER_MODEL")
 	if llmModel == "" {
 		llmModel = anthropic.ModelClaudeOpus5
@@ -89,6 +115,8 @@ func doMain(ctx context.Context, allowedRoots []string) error {
 	} else if len(promptFile) > 0 {
 		prompt = string(promptFile)
 	}
+
+	prompt = defaultPrompt
 
 	return runLLM(ctx, llmModel, []string{fmt.Sprintf("You are reviewing merge request %d", mergeRequestId), prompt}, tools)
 }

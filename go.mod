@@ -4,11 +4,13 @@ go 1.27.1
 
 require (
 	github.com/anthropics/anthropic-sdk-go v1.84.0
+	github.com/ctreminiom/go-atlassian/v2 v2.12.0
 	github.com/spf13/cobra v1.10.2
 	gitlab.com/gitlab-org/api/client-go/v3 v3.34.0
 )
 
 require (
+	dario.cat/mergo v1.0.2 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.2 // indirect
 	github.com/creack/pty v1.1.24 // indirect

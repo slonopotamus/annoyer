@@ -3,6 +3,8 @@
 
 == Unreleased
 
+* Add Jira integration
+
 == 0.0.2
 
 * Fix prompt caching.
