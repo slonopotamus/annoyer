@@ -3,6 +3,10 @@
 
 == Unreleased
 
+== 0.0.4
+
+* Revert anthropic-sdk-go v2 upgrade
+
 == 0.0.3
 
 * Add Jira integration
