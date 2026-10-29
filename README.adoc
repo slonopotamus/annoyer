@@ -97,15 +97,26 @@ go build .
 The agent is given GitLab tools:
 
 * `approveMergeRequest` — approve the MR
+* `compare` — compare two refs (branch/tag/SHA) and return the diff between them
 * `createDiscussion` — create a (possibly inline) thread on the MR; can reply to an existing thread
 * `createMergeRequestNote` — add a top-level note
+* `getBranch` — get a branch by name, including its HEAD commit SHA
+* `getCommit` — get a commit by SHA
+* `getCommitDiff` — get the file diff of a single commit
 * `getFile` — read a file at a path/ref (raw contents)
+* `getFileBlame` — get the blame of a file (which commit last modified each line)
+* `getJob` — get a CI job by ID (status, stage, duration)
+* `getJobLog` — get the log (trace) of a CI job; truncated to its tail when long
 * `getMergeRequest` — MR details (state, title, branches, description) and the `diff_refs` SHAs needed for inline comments; file diffs come from `listMergeRequestDiffs`
 * `getMergeRequestCommits` — list MR commits
+* `getPipelineTestReport` — get the unit test results of a CI pipeline
+* `listBranches` — list repository branches
+* `listCommits` — list commits, filterable by ref, path, and time range
 * `listMergeRequestDiffs` — list the changed-file diffs
 * `listMergeRequestDiscussions` — list existing threads
 * `listMergeRequestNotes` — list notes
 * `listMergeRequestPipelines` — list MR pipelines
+* `listMergeRequests` — list the project's merge requests
 * `listPipelineJobs` — list jobs for a pipeline
 * `listTree` — list repository files/directories
 * `resolveDiscussion` — resolve/reopen a thread

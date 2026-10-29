@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 
 	"github.com/anthropics/anthropic-sdk-go/v2"
 	"github.com/anthropics/anthropic-sdk-go/v2/toolrunner"
@@ -12,6 +14,10 @@ import (
 type approveMergeRequestParams struct {
 	MergeRequest int64                             `json:"merge_request_id"`
 	Options      gitlab.ApproveMergeRequestOptions `json:"options"`
+}
+
+type compareParams struct {
+	Options gitlab.CompareOptions `json:"options"`
 }
 
 type createMergeRequestDiscussionParams struct {
@@ -24,9 +30,36 @@ type createMergeRequestNoteParams struct {
 	Options      gitlab.CreateMergeRequestNoteOptions `json:"options"`
 }
 
+type getBranchParams struct {
+	Branch string `json:"branch"`
+}
+
+type getCommitParams struct {
+	SHA     string                  `json:"sha"`
+	Options gitlab.GetCommitOptions `json:"options"`
+}
+
+type getCommitDiffParams struct {
+	SHA     string                      `json:"sha"`
+	Options gitlab.GetCommitDiffOptions `json:"options"`
+}
+
 type getFileParams struct {
 	Path    string                   `json:"path"`
 	Options gitlab.GetRawFileOptions `json:"options"`
+}
+
+type getFileBlameParams struct {
+	Path    string                     `json:"path"`
+	Options gitlab.GetFileBlameOptions `json:"options"`
+}
+
+type getJobParams struct {
+	JobID int64 `json:"job_id"`
+}
+
+type getJobLogParams struct {
+	JobID int64 `json:"job_id"`
 }
 
 type getMergeRequestParams struct {
@@ -37,6 +70,18 @@ type getMergeRequestParams struct {
 type getMergeRequestCommitsParams struct {
 	MergeRequest int64                                `json:"merge_request_id"`
 	Options      gitlab.GetMergeRequestCommitsOptions `json:"options"`
+}
+
+type getPipelineTestReportParams struct {
+	PipelineID int64 `json:"pipeline_id"`
+}
+
+type listBranchesParams struct {
+	Options gitlab.ListBranchesOptions `json:"options"`
+}
+
+type listCommitsParams struct {
+	Options gitlab.ListCommitsOptions `json:"options"`
 }
 
 type listMergeRequestDiffsParams struct {
@@ -56,6 +101,10 @@ type listMergeRequestNotesParams struct {
 
 type listMergeRequestPipelinesParams struct {
 	MergeRequest int64 `json:"merge_request_id"`
+}
+
+type listMergeRequestsParams struct {
+	Options gitlab.ListProjectMergeRequestsOptions `json:"options"`
 }
 
 type listPipelineJobsParams struct {
@@ -81,6 +130,8 @@ type unapproveMergeRequestParams struct {
 	MergeRequest int64 `json:"merge_request_id"`
 }
 
+const maxJobLogBytes = 100 * 1024
+
 func marshalToBetaToolResult(v any) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 	result, err := json.Marshal(v)
 	if err != nil {
@@ -93,6 +144,18 @@ func marshalToBetaToolResult(v any) (anthropic.BetaToolResultBlockParamContentUn
 func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error) {
 	approveMergeRequestTool, err := toolrunner.NewBetaToolFromJSONSchema("approveMergeRequest", "Approves a merge request. Pass sha (the MR's HEAD commit) if you want to bind the approval to a specific commit", func(ctx context.Context, params approveMergeRequestParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 		result, _, err := client.MergeRequestApprovals.ApproveMergeRequest(pid, params.MergeRequest, &params.Options, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	compareTool, err := toolrunner.NewBetaToolFromJSONSchema("compare", "Compares two refs (branch, tag, or commit SHA) and returns the diff between them; set from and to in options. Use to diff the MR head against the current target branch head, or any two SHAs", func(ctx context.Context, params compareParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.Repositories.Compare(pid, &params.Options, gitlab.WithContext(ctx))
 		if err != nil {
 			return anthropic.BetaToolResultBlockParamContentUnion{}, err
 		}
@@ -127,11 +190,94 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 		return nil, err
 	}
 
+	getBranchTool, err := toolrunner.NewBetaToolFromJSONSchema("getBranch", "Retrieves a single branch by name, including the SHA of its HEAD commit. Use to find the latest commit of a branch, e.g. the MR's source branch", func(ctx context.Context, params getBranchParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.Branches.GetBranch(pid, params.Branch, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	getCommitTool, err := toolrunner.NewBetaToolFromJSONSchema("getCommit", "Retrieves a single commit by SHA (full or short), including its message, author, and parent commits", func(ctx context.Context, params getCommitParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.Commits.GetCommit(pid, params.SHA, &params.Options, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	getCommitDiffTool, err := toolrunner.NewBetaToolFromJSONSchema("getCommitDiff", "Retrieves the file diff of a single commit by SHA. Use to review a multi-commit MR commit by commit", func(ctx context.Context, params getCommitDiffParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.Commits.GetCommitDiff(pid, params.SHA, &params.Options, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	getFileTool, err := toolrunner.NewBetaToolFromJSONSchema("getFile", "Retrieves the raw contents of a file at the given path. Pass ref (branch, tag, or commit) to read a specific version; defaults to the project HEAD. Use the MR's source branch to read files as changed by the MR", func(ctx context.Context, params getFileParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 		result, _, err := client.RepositoryFiles.GetRawFile(pid, params.Path, &params.Options, gitlab.WithContext(ctx))
 		return anthropic.BetaToolResultBlockParamContentUnion{
 			OfText: &anthropic.BetaTextBlockParam{Text: string(result)},
 		}, err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	getFileBlameTool, err := toolrunner.NewBetaToolFromJSONSchema("getFileBlame", "Retrieves the blame of a file: for each line, the commit that last modified it, with author and date. Use to tell whether a problematic line was introduced by this MR or is pre-existing. ref selects a branch or tag; defaults to the project's default branch. Use range_start and range_end to limit to a line range", func(ctx context.Context, params getFileBlameParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.RepositoryFiles.GetFileBlame(pid, params.Path, &params.Options, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	getJobTool, err := toolrunner.NewBetaToolFromJSONSchema("getJob", "Retrieves a single CI job by its job ID (from listPipelineJobs): status, stage, name, and duration", func(ctx context.Context, params getJobParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.Jobs.GetJob(pid, params.JobID, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	getJobLogTool, err := toolrunner.NewBetaToolFromJSONSchema("getJobLog", "Retrieves the log (trace) of a CI job by its job ID (from listPipelineJobs). Use to diagnose why a job failed. Logs can be large, so the result is truncated to its tail when long — the failure summary is at the end of the log", func(ctx context.Context, params getJobLogParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		reader, _, err := client.Jobs.GetTraceFile(pid, params.JobID, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		jobLog, err := io.ReadAll(reader)
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		if len(jobLog) > maxJobLogBytes {
+			jobLog = append([]byte(fmt.Sprintf("[log truncated, showing the last %d of %d bytes]\n", maxJobLogBytes, len(jobLog))), jobLog[len(jobLog)-maxJobLogBytes:]...)
+		}
+
+		return anthropic.BetaToolResultBlockParamContentUnion{
+			OfText: &anthropic.BetaTextBlockParam{Text: string(jobLog)},
+		}, nil
 	})
 	if err != nil {
 		return nil, err
@@ -151,6 +297,42 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 
 	getMergeRequestCommitsTool, err := toolrunner.NewBetaToolFromJSONSchema("getMergeRequestCommits", "Retrieves commits for a merge request", func(ctx context.Context, params getMergeRequestCommitsParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 		result, _, err := client.MergeRequests.GetMergeRequestCommits(pid, params.MergeRequest, &params.Options, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	getPipelineTestReportTool, err := toolrunner.NewBetaToolFromJSONSchema("getPipelineTestReport", "Retrieves the unit test results of a CI pipeline (pipeline ID from listMergeRequestPipelines): pass/fail/skip totals and the list of failed and skipped tests with durations", func(ctx context.Context, params getPipelineTestReportParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.Pipelines.GetPipelineTestReport(pid, params.PipelineID, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	listBranchesTool, err := toolrunner.NewBetaToolFromJSONSchema("listBranches", "Lists the repository's branches. Use name_regex to filter by pattern. 20 branches per page by default", func(ctx context.Context, params listBranchesParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.Branches.ListBranches(pid, &params.Options, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	listCommitsTool, err := toolrunner.NewBetaToolFromJSONSchema("listCommits", "Lists commits of the repository. ref_name selects a branch or tag; defaults to the project's default branch. Use path to narrow to commits touching a specific file, and since/until to bound the time range. 20 commits per page by default", func(ctx context.Context, params listCommitsParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.Commits.ListCommits(pid, &params.Options, gitlab.WithContext(ctx))
 		if err != nil {
 			return anthropic.BetaToolResultBlockParamContentUnion{}, err
 		}
@@ -199,6 +381,18 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 
 	listMergeRequestPipelinesTool, err := toolrunner.NewBetaToolFromJSONSchema("listMergeRequestPipelines", "Lists all CI pipelines for a merge request", func(ctx context.Context, params listMergeRequestPipelinesParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 		result, _, err := client.MergeRequests.ListMergeRequestPipelines(pid, params.MergeRequest, gitlab.WithContext(ctx))
+		if err != nil {
+			return anthropic.BetaToolResultBlockParamContentUnion{}, err
+		}
+
+		return marshalToBetaToolResult(result)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	listMergeRequestsTool, err := toolrunner.NewBetaToolFromJSONSchema("listMergeRequests", "Lists merge requests of the project: ID, title, state, source/target branches, and author. Use state to filter (opened, closed, merged, all; opened by default). Returns basic merge request objects; use getMergeRequest for full details", func(ctx context.Context, params listMergeRequestsParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		result, _, err := client.MergeRequests.ListProjectMergeRequests(pid, &params.Options, gitlab.WithContext(ctx))
 		if err != nil {
 			return anthropic.BetaToolResultBlockParamContentUnion{}, err
 		}
@@ -272,15 +466,26 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 
 	return []anthropic.BetaTool{
 		approveMergeRequestTool,
+		compareTool,
 		createDiscussionTool,
 		createMergeRequestNoteTool,
+		getBranchTool,
+		getCommitTool,
+		getCommitDiffTool,
 		getFileTool,
+		getFileBlameTool,
+		getJobTool,
+		getJobLogTool,
 		getMergeRequestTool,
 		getMergeRequestCommitsTool,
+		getPipelineTestReportTool,
+		listBranchesTool,
+		listCommitsTool,
 		listMergeRequestDiffsTool,
 		listMergeRequestDiscussionsTool,
 		listMergeRequestNotesTool,
 		listMergeRequestPipelinesTool,
+		listMergeRequestsTool,
 		listPipelineJobsTool,
 		listTreeTool,
 		resolveDiscussionTool,
