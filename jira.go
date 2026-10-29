@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/toolrunner"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/toolrunner"
 	jira "github.com/ctreminiom/go-atlassian/v2/jira/v2"
 	model "github.com/ctreminiom/go-atlassian/v2/pkg/infra/models"
 )

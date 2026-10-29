@@ -3,7 +3,7 @@ module github.com/slonopotamus/annoyer
 go 1.27.1
 
 require (
-	github.com/anthropics/anthropic-sdk-go v1.84.0
+	github.com/anthropics/anthropic-sdk-go/v2 v2.3.0
 	github.com/ctreminiom/go-atlassian/v2 v2.12.0
 	github.com/spf13/cobra v1.10.2
 	gitlab.com/gitlab-org/api/client-go/v3 v3.35.0
@@ -40,4 +40,4 @@ require (
 
 // Temporary workaround for https://github.com/anthropics/anthropic-sdk-go/issues/481
 // See https://github.com/anthropics/anthropic-sdk-go/pull/482
-replace github.com/anthropics/anthropic-sdk-go => github.com/tingly-dev/anthropic-sdk-go v1.84.1-0.20261021030836-be88e657ec1f
+replace github.com/anthropics/anthropic-sdk-go/v2 => github.com/tingly-dev/anthropic-sdk-go/v2 v2.0.0-20261025051508-7e2ec881bcb5

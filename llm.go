@@ -6,7 +6,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/v2"
 )
 
 func runLLM(ctx context.Context, model string, prompt []string, tools []anthropic.BetaTool) error {
