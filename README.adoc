@@ -3,7 +3,7 @@
 :uri-project: https://github.com/slonopotamus/{project-handle}
 :uri-ci: {uri-project}/actions?query=branch%3Amain
 :source-highlighter: rouge
-:version: 0.0.1
+:version: 0.0.3
 
 image:{uri-project}/actions/workflows/ci.yml/badge.svg?branch=main[Build Status,link={uri-ci}]
 image:https://img.shields.io/github/release/slonopotamus/{project-handle}[Download,link={uri-project}/releases/latest]
