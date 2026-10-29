@@ -64,7 +64,12 @@ func newJiraTools(client *jira.Client) ([]anthropic.BetaTool, error) {
 	}
 
 	listJiraIssueCommentsTool, err := toolrunner.NewBetaToolFromJSONSchema("listJiraIssueComments", "Lists the comments on a Jira issue by its key. Use order_by to sort by creation or update time, and start_at/max_results for pagination (20 comments per page by default)", func(ctx context.Context, params listJiraIssueCommentsParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
-		result, resp, err := client.Issue.Comment.Gets(ctx, params.IssueKey, params.OrderBy, params.Expand, params.StartAt, params.MaxResults)
+		maxResults := params.MaxResults
+		if maxResults <= 0 {
+			maxResults = 20
+		}
+
+		result, resp, err := client.Issue.Comment.Gets(ctx, params.IssueKey, params.OrderBy, params.Expand, params.StartAt, maxResults)
 		if err != nil {
 			return anthropic.BetaToolResultBlockParamContentUnion{}, jiraError(err, resp)
 		}

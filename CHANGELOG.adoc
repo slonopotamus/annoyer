@@ -3,6 +3,9 @@
 
 == Unreleased
 
+* Fix `listJiraIssueComments` returning no comments when `max_results` is omitted
+* Fix `resolveDiscussion` description claiming it can reopen threads
+
 == 0.0.4
 
 * Revert anthropic-sdk-go v2 upgrade

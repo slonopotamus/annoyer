@@ -427,7 +427,7 @@ func newGitLabTools(client *gitlab.Client, pid any) ([]anthropic.BetaTool, error
 		return nil, err
 	}
 
-	resolveDiscussionTool, err := toolrunner.NewBetaToolFromJSONSchema("resolveDiscussion", "Resolves (or reopens) a discussion thread on a merge request by its ID. Use to mark a previously reported issue as fixed. Requires Developer or higher role, or being the author of the change", func(ctx context.Context, params resolveMergeRequestDiscussionParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+	resolveDiscussionTool, err := toolrunner.NewBetaToolFromJSONSchema("resolveDiscussion", "Resolves a discussion thread on a merge request by its ID. Use to mark a previously reported issue as fixed. Requires Developer or higher role, or being the author of the change", func(ctx context.Context, params resolveMergeRequestDiscussionParams) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 		resolved := true
 		result, _, err := client.Discussions.ResolveMergeRequestDiscussion(pid, params.MergeRequest, params.DiscussionID, &gitlab.ResolveMergeRequestDiscussionOptions{Resolved: &resolved}, gitlab.WithContext(ctx))
 		if err != nil {
