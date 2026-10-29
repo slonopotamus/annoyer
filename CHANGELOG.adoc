@@ -3,6 +3,8 @@
 
 == Unreleased
 
+== 0.0.3
+
 * Add Jira integration
 * Add GitLab tools: compare, getBranch, getCommit, getCommitDiff, getFileBlame, getJob, getJobLog, getPipelineTestReport, listBranches, listCommits, listMergeRequests
 
