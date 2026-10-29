@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/anthropics/anthropic-sdk-go/v2"
-	"github.com/anthropics/anthropic-sdk-go/v2/toolrunner"
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/toolrunner"
 	"gitlab.com/gitlab-org/api/client-go/v3"
 )
 

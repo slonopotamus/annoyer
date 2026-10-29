@@ -8,8 +8,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/anthropics/anthropic-sdk-go/v2"
-	"github.com/anthropics/anthropic-sdk-go/v2/tools/agenttoolset"
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/tools/agenttoolset"
 	jira "github.com/ctreminiom/go-atlassian/v2/jira/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go/v3"
