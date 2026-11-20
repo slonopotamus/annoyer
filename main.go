@@ -87,7 +87,7 @@ func doMain(ctx context.Context, allowedRoots []string) error {
 		tools = append(tools, jiraTools...)
 	}
 
-	llmModel := os.Getenv("ANNOYER_MODEL")
+	llmModel := os.Getenv("ANTHROPIC_MODEL")
 	if llmModel == "" {
 		llmModel = anthropic.ModelClaudeOpus5
 	}

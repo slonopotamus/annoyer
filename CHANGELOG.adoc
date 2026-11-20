@@ -5,6 +5,7 @@
 
 * Fix `listJiraIssueComments` returning no comments when `max_results` is omitted
 * Fix `resolveDiscussion` description claiming it can reopen threads
+* *Breaking change*: Rename `ANNOYER_MODEL` env variable to `ANTHROPIC_MODEL`
 
 == 0.0.4
 

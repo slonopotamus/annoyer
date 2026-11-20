@@ -32,7 +32,7 @@ Environment variables:
 |set yourself, required
 |API key for the LLM provider (standard Anthropic SDK variable)
 
-|`ANNOYER_MODEL`
+|`ANTHROPIC_MODEL`
 |set yourself, optional
 |LLM model ID passed to the LLM API, defaults to `claude-opus-5`
 
@@ -78,7 +78,7 @@ review:
   image: golang:1.27
   variables:
     ANTHROPIC_BASE_URL: your anthropic-compatible LLM provider
-    ANNOYER_MODEL: your/model-id
+    ANTHROPIC_MODEL: your/model-id
     GITLAB_TOKEN: your token
   script:
     - go install github.com/slonopotamus/annoyer@{version}
